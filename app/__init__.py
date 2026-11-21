@@ -1,0 +1,37 @@
+import os
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+from flask_wtf import CSRFProtect
+from config import Config
+
+db=SQLAlchemy(); migrate=Migrate(); login=LoginManager(); csrf=CSRFProtect()
+def create_app(config=Config):
+    app=Flask(__name__); app.config.from_object(config)
+    db.init_app(app); migrate.init_app(app,db); login.init_app(app); csrf.init_app(app)
+    login.login_view='auth.login'; login.login_message='Faça login para acessar.'
+    from app import models
+    from app.routes import auth, main, products, movements, suppliers, purchases, reports, api
+    for bp,prefix in [(auth.bp,None),(main.bp,None),(products.bp,'/products'),(movements.bp,'/movements'),(suppliers.bp,'/suppliers'),(purchases.bp,'/purchases'),(reports.bp,'/reports'),(api.bp,'/api')]: app.register_blueprint(bp,url_prefix=prefix)
+    with app.app_context():
+        uri=app.config['SQLALCHEMY_DATABASE_URI']
+        if uri.startswith('sqlite:///'):
+            db_file=uri.replace('sqlite:///','',1)
+            os.makedirs(os.path.dirname(os.path.abspath(db_file)),exist_ok=True)
+        db.create_all()
+        bootstrap()
+    return app
+
+def bootstrap():
+    from app.models import Organization,User
+    email=os.getenv('BOOTSTRAP_ADMIN_EMAIL'); password=os.getenv('BOOTSTRAP_ADMIN_PASSWORD')
+    if not email or not password or User.query.filter_by(email=email.lower()).first(): return
+    org=Organization(name=os.getenv('BOOTSTRAP_ORG_NAME','Empresa Demo')); db.session.add(org); db.session.flush()
+    user=User(organization_id=org.id,name='Administrador',email=email.lower(),role='ADMIN'); user.set_password(password)
+    db.session.add(user); db.session.commit()
+
+@login.user_loader
+def load_user(uid):
+    from app.models import User
+    return db.session.get(User,int(uid))
