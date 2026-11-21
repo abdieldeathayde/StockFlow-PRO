@@ -17,10 +17,10 @@ def product_save(org,data,user,product=None):
     if any(data[k]<0 for k in ('cost_price','sale_price','quantity','minimum_quantity')): raise BusinessError('Valores e quantidades não podem ser negativos.')
     if not data['name'].strip() or not sku: raise BusinessError('SKU e nome são obrigatórios.')
     if not product:
-        product=Product(organization_id=org,sku=sku,barcode=barcode,name=data['name'].strip(),description=data.get('description',''),category=data.get('category',''),cost_price=data['cost_price'],sale_price=data['sale_price'],quantity=data['quantity'],minimum_quantity=data['minimum_quantity'])
+        product=Product(organization_id=org,sku=sku,barcode=barcode,name=data['name'].strip(),location=data.get('location','').strip(),ncm=data.get('ncm','').strip(),description=data.get('description',''),category=data.get('category',''),cost_price=data['cost_price'],sale_price=data['sale_price'],quantity=data['quantity'],minimum_quantity=data['minimum_quantity'])
         db.session.add(product); db.session.flush(); audit(org,user,'CREATE','Product',product.id,sku)
     else:
-        product.sku=sku; product.barcode=barcode; product.name=data['name'].strip(); product.description=data.get('description',''); product.category=data.get('category',''); product.cost_price=data['cost_price']; product.sale_price=data['sale_price']; product.minimum_quantity=data['minimum_quantity']; audit(org,user,'UPDATE','Product',product.id,sku)
+        product.sku=sku; product.barcode=barcode; product.name=data['name'].strip(); product.location=data.get('location','').strip(); product.ncm=data.get('ncm','').strip(); product.description=data.get('description',''); product.category=data.get('category',''); product.cost_price=data['cost_price']; product.sale_price=data['sale_price']; product.minimum_quantity=data['minimum_quantity']; audit(org,user,'UPDATE','Product',product.id,sku)
     db.session.commit(); return product
 def move(org,pid,kind,qty,note,user,reference=''):
     p=Product.query.filter_by(organization_id=org,id=pid,active=True).first()

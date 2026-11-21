@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from sqlalchemy import inspect, text
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -20,8 +21,22 @@ def create_app(config=Config):
             db_file=uri.replace('sqlite:///','',1)
             os.makedirs(os.path.dirname(os.path.abspath(db_file)),exist_ok=True)
         db.create_all()
+        ensure_product_import_columns()
         bootstrap()
     return app
+
+def ensure_product_import_columns():
+    inspector=inspect(db.engine)
+    if not inspector.has_table('product'): return
+    columns={column['name'] for column in inspector.get_columns('product')}
+    additions={
+        'location': "VARCHAR(120) NOT NULL DEFAULT ''",
+        'ncm': "VARCHAR(20) NOT NULL DEFAULT ''",
+    }
+    with db.engine.begin() as connection:
+        for name,definition in additions.items():
+            if name not in columns:
+                connection.execute(text(f'ALTER TABLE product ADD COLUMN {name} {definition}'))
 
 def bootstrap():
     from app.models import Organization,User

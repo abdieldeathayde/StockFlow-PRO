@@ -22,6 +22,9 @@ Para usar um arquivo `.env`, copie `.env.example` para `.env` somente se ainda n
 ## Docker
 Configure variáveis de bootstrap/SECRET_KEY e rode `docker compose up --build`; abra localhost:5000. O Compose utiliza PostgreSQL persistido em volume.
 
+## Importação de produtos
+Na tela **Produtos**, envie um `.xlsx` com as colunas `Nome da Peça`, `Locação`, `Quantidade`, `Preço Unitário` e `NCM` (ou baixe o modelo disponível nessa tela). O preço unitário é importado como custo; SKUs são gerados automaticamente; nomes repetidos, ignorando diferenças de maiúsculas/minúsculas e espaços, são pulados. Linhas sem nome, quantidade ou preço, ou com valores numéricos inválidos, também são puladas e contabilizadas; Locação e NCM podem ficar em branco.
+
 ## Testes
 `pytest -q`
 
