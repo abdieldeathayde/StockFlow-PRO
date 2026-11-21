@@ -5,6 +5,7 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY:-change-this-before-deploy}
       DATABASE_URL: postgresql+psycopg://stockflow:stockflow@db:5432/stockflow
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Administrador}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.local}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-ChangeThisPassword!}
       BOOTSTRAP_ORG_NAME: ${BOOTSTRAP_ORG_NAME:-Demo Company}

@@ -25,10 +25,10 @@ def create_app(config=Config):
 
 def bootstrap():
     from app.models import Organization,User
-    email=os.getenv('BOOTSTRAP_ADMIN_EMAIL'); password=os.getenv('BOOTSTRAP_ADMIN_PASSWORD')
-    if not email or not password or User.query.filter_by(email=email.lower()).first(): return
+    email=os.getenv('BOOTSTRAP_ADMIN_EMAIL','').strip().lower(); password=os.getenv('BOOTSTRAP_ADMIN_PASSWORD')
+    if not email or not password or User.query.filter_by(email=email).first(): return
     org=Organization(name=os.getenv('BOOTSTRAP_ORG_NAME','Empresa Demo')); db.session.add(org); db.session.flush()
-    user=User(organization_id=org.id,name='Administrador',email=email.lower(),role='ADMIN'); user.set_password(password)
+    user=User(organization_id=org.id,name=os.getenv('BOOTSTRAP_ADMIN_NAME','Administrador'),email=email,role='ADMIN'); user.set_password(password)
     db.session.add(user); db.session.commit()
 
 @login.user_loader
